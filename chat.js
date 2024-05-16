@@ -1,4 +1,4 @@
-import * as Earthstar from "https://cdn.earthstar-project.org/js/earthstar.web.v10.2.2.js";
+import * as Earthstar from "https://deno.land/x/earthstar@v10.2.2/mod.ts";
 
 // Use the values for shareKeypair which were logged to your console.
 const shareKeypair = {
@@ -14,7 +14,7 @@ const authorKeypair = {
 };
 
 const replica = new Earthstar.Replica({
-	driver: new Earthstar.ReplicaDriverWeb(shareKeypair.shareAddress),
+	driver: new Earthstar.ReplicaDriverMemory(shareKeypair.shareAddress),
 	shareSecret: shareKeypair.secret,
 });
 
