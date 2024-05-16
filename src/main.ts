@@ -1,5 +1,5 @@
 import * as Earthstar from "https://deno.land/x/earthstar@v10.2.2/mod.ts";
-import { Saiga } from "../../saiga/src/saiga.ts";
+import { Saiga } from "https://raw.githubusercontent.com/ledgerloops/saiga/main/src/saiga.ts";
 
 async function simulate() {
   const shareKeys: {
