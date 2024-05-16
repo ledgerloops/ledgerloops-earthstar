@@ -1,7 +1,7 @@
+// deno-lint-ignore-file no-explicit-any
 import * as Earthstar from "https://deno.land/x/earthstar@v10.2.2/mod.ts";
-import { Saiga } from "https://raw.githubusercontent.com/ledgerloops/saiga/main/src/saiga.ts";
 
-async function simulate() {
+export async function simulate(saigaFactory: (name: string) => any) {
   const shareKeys: {
     [index: string]: Earthstar.ShareKeypair
   } = {
@@ -29,19 +29,16 @@ async function simulate() {
 ]);
 
   const servers: {
-    [index: string]: Saiga
+    [index: string]: any
   } = {};
   Object.keys(shareKeys).forEach((share) => {
     const participants = share.split('-');
     participants.forEach((participant) => {
       if (!servers[participant]) {
-        servers[participant] = new Saiga(participant);
+        servers[participant] = saigaFactory(participant);
       }
     });
     servers[participants[0]].meet(participants[1], shareKeys[share]);
     servers[participants[1]].meet(participants[0], shareKeys[share]);
   });
 }
-
-// ...
-simulate();
