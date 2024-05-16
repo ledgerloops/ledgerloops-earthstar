@@ -1,34 +1,71 @@
-/**
- * Some predefined delay values (in milliseconds).
- */
-export enum Delays {
-  Short = 500,
-  Medium = 2000,
-  Long = 5000,
+import * as Earthstar from "https://deno.land/x/earthstar@v10.2.2/mod.ts";
+
+
+// Use the values for shareKeypair which were logged to your console.
+const shareKeypair = {
+	shareAddress:
+		"+chatting.bffblffbnzrjeqmh3s3vnuvztfibnzuex3e5h4nthsq7dum4mnlra",
+	secret: "b4wghljrl4f4e7tedrggn72gyqvqyeqvlg6u5usi6nijwyrukbena",
+};
+
+// Use the values for authorKeypair which were logged to your console.
+const authorKeypair = {
+	address: "@test.bozdi5jngr2yztz5ue6qnvqpeq5flm6gpuqajikngp3wjolabgmaa",
+	secret: "byrp2eqpjzdmaxllybrbrtblb54bmuwbl26n6hrfendg72zcxsduq",
+};
+
+const replica = new Earthstar.Replica({
+	driver: new Earthstar.ReplicaDriverMemory(shareKeypair.shareAddress),
+	shareSecret: shareKeypair.secret,
+});
+
+if (Earthstar.notErr(shareKeypair) && Earthstar.notErr(authorKeypair)) {
+	console.group("Share keypair");
+	console.log(shareKeypair);
+	console.groupEnd();
+
+	console.group("Author keypair");
+	console.log(authorKeypair);
+	console.groupEnd();
+} else if (Earthstar.isErr(shareKeypair)) {
+	console.error(shareKeypair);
+} else if (Earthstar.isErr(authorKeypair)) {
+	console.error(authorKeypair);
 }
 
-/**
- * Returns a Promise<string> that resolves after a given time.
- *
- * @param {string} name - A name.
- * @param {number=} [delay=Delays.Medium] - A number of milliseconds to delay resolution of the Promise.
- * @returns {Promise<string>}
- */
-function delayedHello(
-  name: string,
-  delay: number = Delays.Medium,
-): Promise<string> {
-  return new Promise((resolve: (value?: string) => void) =>
-    setTimeout(() => resolve(`Hello, ${name}`), delay),
-  );
+async function write(text: string) {
+	// Write the contents of the message to the replica.
+	const result = await replica.set(authorKeypair, {
+		text,
+		path: `/chat/~${authorKeypair.address}/${Date.now()}`,
+	});
+	
+	if (Earthstar.isErr(result)) {
+		console.error(result);
+	}
 }
 
-// Please see the comment in the .eslintrc.json file about the suppressed rule!
-// Below is an example of how to use ESLint errors suppression. You can read more
-// at https://eslint.org/docs/latest/user-guide/configuring/rules#disabling-rules
+console.log('listening for chat messages');
+const cache = new Earthstar.ReplicaCache(replica);
+cache.onCacheUpdated(() => {
+	console.log("Cache updated!");
+	const chatDocs = cache.queryDocs({
+		filter: { pathStartsWith: "/chat" },
+	});
+	for (const doc of chatDocs) {
+		console.log(doc.text);
+	}
+});
 
-// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-export async function greeter(name: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
-  // The name parameter should be of type string. Any is used only to trigger the rule.
-  return await delayedHello(name, Delays.Long);
-}
+console.log('syncing replica with peer');
+const peer = new Earthstar.Peer();
+peer.addReplica(replica);
+const syncer = peer.sync("http://localhost:8000");
+await syncer.isDone();
+console.log('synced; writing');
+write("Hello, world!");
+// console.log(replica);
+
+console.log('done');
+// FIXME: ...
+cache.queryDocs();
