@@ -137,7 +137,7 @@ export abstract class Node {
   }
 
   protected sendMessageToFriend(friend: string, message: Message): void {
-    this.messageForwarder.forwardMessage(this, this.friends[friend].node, message);
+    this.messageForwarder.forwardMessage(this, this.friends[friend].node as Node, message);
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -152,7 +152,7 @@ export abstract class Node {
   protected handleOkayToSendProbesMessage(_from: string): void {}
 
   protected sendMessage(to: string, message: Message): void {
-    this.messageForwarder.forwardMessage(this, this.friends[to].node, message);
+    this.messageForwarder.forwardMessage(this, this.friends[to].node as Node, message);
   }
   receiveMessage(sender: Node, message: Message): void {
     this.debugLog.push(`[Node#receiveMessage] ${this.name} receives message from ${sender.getName()}`);
