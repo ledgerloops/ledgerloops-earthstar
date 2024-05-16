@@ -58,6 +58,7 @@ const messages = document.getElementById("messages");
 const cache = new Earthstar.ReplicaCache(replica);
 
 function renderMessages() {
+	console.log('renderMessages called');
 	messages.innerHTML = "";
 
 	const chatDocs = cache.queryDocs({
@@ -74,10 +75,14 @@ function renderMessages() {
 }
 
 cache.onCacheUpdated(() => {
+	console.log('onCacheUpdated called');
 	renderMessages();
 });
 
-renderMessages();
+// renderMessages();
+cache.queryDocs({
+	filter: { pathStartsWith: "/chat" },
+});
 
 const peer = new Earthstar.Peer();
 peer.addReplica(replica);

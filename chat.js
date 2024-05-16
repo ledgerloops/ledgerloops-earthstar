@@ -69,7 +69,8 @@ cache.onCacheUpdated(() => {
 	renderMessages();
 });
 
-renderMessages();
+// renderMessages();
+// cache.queryDocs();
 
 const peer = new Earthstar.Peer();
 peer.addReplica(replica);
