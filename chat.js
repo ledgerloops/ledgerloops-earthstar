@@ -32,44 +32,36 @@ if (Earthstar.notErr(shareKeypair) && Earthstar.notErr(authorKeypair)) {
 	console.error(authorKeypair);
 }
 
-const form = document.getElementById("message-form");
-const input = document.querySelector("input");
-
-form.addEventListener("submit", async (event) => {
-	// This stops the page from reloading.
-	event.preventDefault();
-
+async function write(text) {
 	// Write the contents of the message to the replica.
 	const result = await replica.set(authorKeypair, {
-		text: input.value,
+		text,
 		path: `/chat/~${authorKeypair.address}/${Date.now()}`,
 	});
 	
 	if (Earthstar.isErr(result)) {
 		console.error(result);
 	}
-
-	input.value = "";
-});
+}
 
 // Read messages from chat.
-const messages = document.getElementById("messages");
+// const messages = document.getElementById("messages");
 
 const cache = new Earthstar.ReplicaCache(replica);
 
 function renderMessages() {
-	messages.innerHTML = "";
+	// messages.innerHTML = "";
 
 	const chatDocs = cache.queryDocs({
 		filter: { pathStartsWith: "/chat" },
 	});
 
 	for (const doc of chatDocs) {
-		const message = document.createElement("li");
+		// const message = document.createElement("li");
 
-		message.textContent = doc.text;
+		console.log(doc.text);
 
-		messages.append(message);
+		// messages.append(message);
 	}
 }
 
