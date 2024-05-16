@@ -1,4 +1,6 @@
-src/server/.share_data
+.share_data
+known_shares.json
+
 # Logs
 logs
 *.log
