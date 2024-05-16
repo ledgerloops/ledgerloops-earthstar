@@ -1,33 +1,65 @@
 import * as Earthstar from "https://deno.land/x/earthstar@v10.2.2/mod.ts";
 
-const SHARE_TO_SYNC =
-	"+gardening.bhyux4opeug2ieqcy36exrf4qymc56adwll4zeazm42oamxtr7heq";
+// Use the values for shareKeypair which were logged to your console.
+const shareKeypair = {
+	shareAddress:
+		"+chatting.bffblffbnzrjeqmh3s3vnuvztfibnzuex3e5h4nthsq7dum4mnlra",
+	secret: "b4wghljrl4f4e7tedrggn72gyqvqyeqvlg6u5usi6nijwyrukbena",
+};
 
-const SHARE_SECRET = "buaqth6jr5wkksnhdlpfi64cqcnjzfx3r6cssnfqdvitjmfygsk3q";
-
-const authorKeypair = await Earthstar.Crypto.generateAuthorKeypair("suzy");
-
-if (Earthstar.isErr(authorKeypair)) {
-	console.error(authorKeypair);
-	Deno.exit(1);
-}
+// Use the values for authorKeypair which were logged to your console.
+const authorKeypair = {
+	address: "@test.bozdi5jngr2yztz5ue6qnvqpeq5flm6gpuqajikngp3wjolabgmaa",
+	secret: "byrp2eqpjzdmaxllybrbrtblb54bmuwbl26n6hrfendg72zcxsduq",
+};
 
 const replica = new Earthstar.Replica({
-	driver: new Earthstar.ReplicaDriverMemory(SHARE_TO_SYNC),
-	shareSecret: SHARE_SECRET,
+	driver: new Earthstar.ReplicaDriverMemory(shareKeypair.shareAddress),
+	shareSecret: shareKeypair.secret,
 });
 
-await replica.set(authorKeypair, {
-	path: "/test",
-	text: "Hello.",
-});
+if (Earthstar.notErr(shareKeypair) && Earthstar.notErr(authorKeypair)) {
+	console.group("Share keypair");
+	console.log(shareKeypair);
+	console.groupEnd();
 
+	console.group("Author keypair");
+	console.log(authorKeypair);
+	console.groupEnd();
+} else if (Earthstar.isErr(shareKeypair)) {
+	console.error(shareKeypair);
+} else if (Earthstar.isErr(authorKeypair)) {
+	console.error(authorKeypair);
+}
+
+async function write(text: string) {
+	// Write the contents of the message to the replica.
+	const result = await replica.set(authorKeypair, {
+		text,
+		path: `/chat/~${authorKeypair.address}/${Date.now()}`,
+	});
+	
+	if (Earthstar.isErr(result)) {
+		console.error(result);
+	}
+}
+
+console.log('syncing replica with peer');
 const peer = new Earthstar.Peer();
-
 peer.addReplica(replica);
+peer.sync("http://localhost:8000", true);
+console.log('synced; writing');
+write("Hello, world!");
 
-const syncer = peer.sync("http://localhost:8000");
-
-await syncer.isDone();
-
-console.log("Successfully synced with server.");
+console.log('listening for chat messages');
+const cache = new Earthstar.ReplicaCache(replica);
+cache.onCacheUpdated(() => {
+	console.log("Cache updated!");
+	const chatDocs = cache.queryDocs({
+		filter: { pathStartsWith: "/chat" },
+	});
+	for (const doc of chatDocs) {
+		console.log(doc.text);
+	}
+});
+console.log('done');
