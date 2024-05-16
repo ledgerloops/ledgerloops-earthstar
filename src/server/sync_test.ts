@@ -44,13 +44,6 @@ async function write(text: string) {
 	}
 }
 
-console.log('syncing replica with peer');
-const peer = new Earthstar.Peer();
-peer.addReplica(replica);
-peer.sync("http://localhost:8000", true);
-console.log('synced; writing');
-write("Hello, world!");
-
 console.log('listening for chat messages');
 const cache = new Earthstar.ReplicaCache(replica);
 cache.onCacheUpdated(() => {
@@ -62,4 +55,16 @@ cache.onCacheUpdated(() => {
 		console.log(doc.text);
 	}
 });
+
+console.log('syncing replica with peer');
+const peer = new Earthstar.Peer();
+peer.addReplica(replica);
+const syncer = peer.sync("http://localhost:8000");
+await syncer.isDone();
+console.log('synced; writing');
+write("Hello, world!");
+// console.log(replica);
+
 console.log('done');
+// FIXME: ...
+cache.queryDocs();
