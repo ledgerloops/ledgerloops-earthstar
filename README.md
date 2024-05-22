@@ -1,16 +1,11 @@
 # LedgerLoops-Earthstar
 
-```
-cd src/client
-npx serve
-```
+Requires [Deno](https://deno.com).
 
+### Development with local copy of Saiga repo
 ```
-cd src/server
-deno run -A server.ts
-```
-
-```
-cd src/server
-deno run -A sync_test.ts
+git clone https://github.com/ledgerloops/saiga
+git clone https://github.com/ledgerloops/ledgerloops-earthstar
+cd ledgerloops-earthstar
+deno run --allow-read --allow-write --allow-net src/dev.ts
 ```
